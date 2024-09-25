@@ -1,4 +1,4 @@
-﻿extends Resource
+extends Resource
 class_name SpectrumComputeParameters
 
 @export var N: int

@@ -1,21 +1,20 @@
-[gd_scene load_steps=42 format=3 uid="uid://bhq0fm6iorl6j"]
+[gd_scene load_steps=41 format=3 uid="uid://bhq0fm6iorl6j"]
 
 [ext_resource type="Shader" path="res://assets/skyshader.gdshader" id="1_ofb3e"]
 [ext_resource type="Script" path="res://src/FFTOceanManager.gd" id="3_n8jvm"]
-[ext_resource type="Shader" path="res://assets/sos_ocean_shader_compute.gdshader" id="5_gfqh6"]
-[ext_resource type="Script" path="res://src/ComputeStep_GenerateSpectrum.gd" id="5_vcuq3"]
+[ext_resource type="Shader" path="res://assets/ocean_shader_compute.gdshader" id="5_gfqh6"]
+[ext_resource type="Script" path="res://src/compute_steps/ComputeStep_GenerateSpectrum.gd" id="5_vcuq3"]
 [ext_resource type="PackedScene" uid="uid://ddivo6ilohsb7" path="res://scenes/fps_counter.tscn" id="6_8id5a"]
 [ext_resource type="Texture2D" uid="uid://bwtjo0qfnutyb" path="res://assets/simulation_data/initial_spectrumm_texture.tres" id="6_x4joo"]
-[ext_resource type="Script" path="res://src/spectrum_compute_parameters.gd" id="7_t2u25"]
-[ext_resource type="Script" path="res://src/ComputeStep_FourierComponents.gd" id="8_qiald"]
-[ext_resource type="Script" path="res://src/FourierComponentsParameters.gd" id="8_x671a"]
-[ext_resource type="Script" path="res://src/ComputeStep_ButterflyCompute.gd" id="11_0jn0k"]
-[ext_resource type="Script" path="res://src/ButterflyGeneratorSharp.cs" id="12_g16uc"]
-[ext_resource type="Script" path="res://src/ComputeStep_InversionPermutation.gd" id="12_osvdc"]
-[ext_resource type="RDShaderFile" uid="uid://h12g5urncwmc" path="res://src/shaders/butterfly_texture_compute.glsl" id="13_hou1d"]
-[ext_resource type="Script" path="res://src/ComputeStep_CreateGradients.gd" id="13_uw1g5"]
+[ext_resource type="Script" path="res://src/compute_steps/ComputeStep_ButterflyTexture.gd" id="7_ovy1l"]
+[ext_resource type="Script" path="res://src/shaders/spectrum_compute_parameters.gd" id="7_t2u25"]
+[ext_resource type="Script" path="res://src/compute_steps/ComputeStep_FourierComponents.gd" id="8_qiald"]
+[ext_resource type="Script" path="res://src/shaders/FourierComponentsParameters.gd" id="8_x671a"]
+[ext_resource type="Script" path="res://src/compute_steps/ComputeStep_ButterflyCompute.gd" id="11_0jn0k"]
+[ext_resource type="Script" path="res://src/compute_steps/ComputeStep_InversionPermutation.gd" id="12_osvdc"]
+[ext_resource type="Script" path="res://src/compute_steps/ComputeStep_CreateGradients.gd" id="13_uw1g5"]
 [ext_resource type="PackedScene" uid="uid://fijoe3ahiiwc" path="res://scenes/panel_container.tscn" id="15_6tosg"]
-[ext_resource type="Script" path="res://src/FreeLookCameraBase.cs" id="17_v4dm2"]
+[ext_resource type="Script" path="res://src/camera/FreeLookCameraBase.cs" id="17_v4dm2"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2dq5t"]
 shader = ExtResource("1_ofb3e")
@@ -212,7 +211,7 @@ light_color = Color(1, 0.788235, 0.788235, 1)
 light_volumetric_fog_energy = 1.222
 shadow_enabled = true
 
-[node name="SumOfSinCompute" type="Node" parent="." node_paths=PackedStringArray("GenerateSpectrum", "FourierComponents", "ButterflyComputeHoriz", "InversionPermutation", "CreateGradients", "ButterflyTexture")]
+[node name="FFTOceanManager" type="Node" parent="." node_paths=PackedStringArray("GenerateSpectrum", "FourierComponents", "ButterflyComputeHoriz", "InversionPermutation", "CreateGradients", "ButterflyTexture")]
 script = ExtResource("3_n8jvm")
 N = 512
 L = 2200
@@ -223,7 +222,7 @@ FourierComponents = NodePath("ComputeStep_FourierComponents")
 ButterflyComputeHoriz = NodePath("ComputeFFT")
 InversionPermutation = NodePath("ComputeStepInversionPermutation")
 CreateGradients = NodePath("ComputeStepCreateGradients")
-ButterflyTexture = NodePath("ButterflyGeneratorSharp")
+ButterflyTexture = NodePath("ComputeStepButterflyTexture")
 displacement_output = SubResource("Texture2DRD_xbnnm")
 spectrum_initial_output = SubResource("Texture2DRD_y2tg1")
 butterfly_tex_output = SubResource("Texture2DRD_bkk2m")
@@ -231,7 +230,7 @@ spectrum_evolution_output = SubResource("Texture2DRD_ttefo")
 spectrum_evolution_output_chop = SubResource("Texture2DRD_tuss4")
 gradient_output = SubResource("Texture2DRD_rnmpa")
 
-[node name="ComputeStep_GenerateSpectrum" type="Node" parent="SumOfSinCompute"]
+[node name="ComputeStep_GenerateSpectrum" type="Node" parent="FFTOceanManager"]
 script = ExtResource("5_vcuq3")
 spec_tex = ExtResource("6_x4joo")
 noise_maps = Array[Texture2D]([SubResource("NoiseTexture2D_1fips"), SubResource("NoiseTexture2D_wmsbu"), SubResource("NoiseTexture2D_78lfr"), SubResource("NoiseTexture2D_ypiyj")])
@@ -239,262 +238,264 @@ params = SubResource("Resource_6hrmd")
 shader_input = "res://src/shaders/generate_spectrum_compute.glsl"
 group_size = Vector2i(16, 16)
 
-[node name="ButterflyGeneratorSharp" type="Node" parent="SumOfSinCompute"]
-script = ExtResource("12_g16uc")
-ShaderFile = ExtResource("13_hou1d")
-N = 256
+[node name="ComputeStepButterflyTexture" type="Node" parent="FFTOceanManager"]
+script = ExtResource("7_ovy1l")
+N = 16
+shader_input = "res://src/shaders/butterfly_texture_compute.glsl"
 
-[node name="ComputeStep_FourierComponents" type="Node" parent="SumOfSinCompute"]
+[node name="ComputeStep_FourierComponents" type="Node" parent="FFTOceanManager"]
 script = ExtResource("8_qiald")
 params = SubResource("Resource_247d2")
 shader_input = "res://src/shaders/fourier_components_compute.glsl"
 group_size = Vector2i(16, 16)
 
-[node name="ComputeFFT" type="Node" parent="SumOfSinCompute"]
+[node name="ComputeFFT" type="Node" parent="FFTOceanManager"]
 script = ExtResource("11_0jn0k")
 shader_input = "res://src/shaders/butterfly_compute.glsl"
 group_size = Vector2i(16, 16)
 
-[node name="ComputeStepInversionPermutation" type="Node" parent="SumOfSinCompute"]
+[node name="ComputeStepInversionPermutation" type="Node" parent="FFTOceanManager"]
 script = ExtResource("12_osvdc")
 N = 256
 shader_input = "res://src/shaders/inversion_permutation_compute.glsl"
 group_size = Vector2i(16, 16)
 
-[node name="ComputeStepCreateGradients" type="Node" parent="SumOfSinCompute"]
+[node name="ComputeStepCreateGradients" type="Node" parent="FFTOceanManager"]
 script = ExtResource("13_uw1g5")
 shader_input = "res://src/shaders/create_gradients.glsl"
 
-[node name="Compute_SumOfSines_Plane" type="MeshInstance3D" parent="SumOfSinCompute"]
-mesh = SubResource("PlaneMesh_egyqu")
-skeleton = NodePath("../..")
+[node name="OceanChunks" type="Node3D" parent="FFTOceanManager"]
 
-[node name="Compute_SumOfSines_Plane2" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
+mesh = SubResource("PlaneMesh_egyqu")
+skeleton = NodePath("../../..")
+
+[node name="Compute_SumOfSines_Plane2" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
 mesh = SubResource("PlaneMesh_6uxx4")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane3" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane3" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -100)
 mesh = SubResource("PlaneMesh_rcc4i")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane19" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane19" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane20" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane20" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane22" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane22" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane23" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane23" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane21" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane21" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane24" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane24" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane25" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane25" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane26" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane26" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane27" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane27" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane28" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane28" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane29" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane29" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -150, 0, -100)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane30" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane30" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -150, 0, -50)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane31" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane31" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -150, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane32" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane32" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -150, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane38" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane38" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 150, 0, -100)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane39" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane39" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 150, 0, -50)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane40" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane40" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 150, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane41" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane41" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 150, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane33" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane33" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -200, 0, -100)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane34" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane34" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -200, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane35" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane35" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -200, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane42" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane42" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 200, 0, -100)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane43" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane43" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 200, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane44" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane44" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 200, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane36" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane36" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -250, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane37" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane37" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -250, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane45" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane45" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 250, 0, -200)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane46" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane46" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 250, 0, -150)
 mesh = SubResource("PlaneMesh_k3d1y")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane4" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane4" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 0)
 mesh = SubResource("PlaneMesh_egyqu")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane5" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane5" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -50)
 mesh = SubResource("PlaneMesh_6uxx4")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane6" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane6" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -100)
 mesh = SubResource("PlaneMesh_rcc4i")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane7" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane7" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 0)
 mesh = SubResource("PlaneMesh_egyqu")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane10" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane10" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 50)
 mesh = SubResource("PlaneMesh_egyqu")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane11" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane11" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 50)
 mesh = SubResource("PlaneMesh_egyqu")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane12" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane12" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 50)
 mesh = SubResource("PlaneMesh_egyqu")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane8" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane8" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -50)
 mesh = SubResource("PlaneMesh_6uxx4")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane9" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane9" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -100)
 mesh = SubResource("PlaneMesh_rcc4i")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane13" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane13" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -50)
 mesh = SubResource("PlaneMesh_6uxx4")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane15" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane15" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, 0)
 mesh = SubResource("PlaneMesh_6uxx4")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane14" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane14" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -100)
 mesh = SubResource("PlaneMesh_rcc4i")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane16" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane16" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -50)
 mesh = SubResource("PlaneMesh_6uxx4")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane17" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane17" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, 0)
 mesh = SubResource("PlaneMesh_6uxx4")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Compute_SumOfSines_Plane18" type="MeshInstance3D" parent="SumOfSinCompute"]
+[node name="Compute_SumOfSines_Plane18" type="MeshInstance3D" parent="FFTOceanManager/OceanChunks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -100)
 mesh = SubResource("PlaneMesh_rcc4i")
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="Control" type="Control" parent="SumOfSinCompute"]
+[node name="SimulationStepUI" type="Control" parent="FFTOceanManager"]
 layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
@@ -503,7 +504,7 @@ offset_left = -40.0
 offset_bottom = 40.0
 grow_horizontal = 0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="SumOfSinCompute/Control"]
+[node name="HBoxContainer" type="HBoxContainer" parent="FFTOceanManager/SimulationStepUI"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -512,56 +513,57 @@ offset_left = -677.0
 offset_bottom = 108.0
 grow_horizontal = 0
 
-[node name="Initial" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+[node name="Initial" parent="FFTOceanManager/SimulationStepUI/HBoxContainer" instance=ExtResource("15_6tosg")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/Initial/MarginContainer" index="0"]
+[node name="TextureRect" parent="FFTOceanManager/SimulationStepUI/HBoxContainer/Initial/MarginContainer" index="0"]
 texture = SubResource("Texture2DRD_y2tg1")
 
-[node name="Butterfly" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+[node name="Butterfly" parent="FFTOceanManager/SimulationStepUI/HBoxContainer" instance=ExtResource("15_6tosg")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/Butterfly/MarginContainer" index="0"]
+[node name="TextureRect" parent="FFTOceanManager/SimulationStepUI/HBoxContainer/Butterfly/MarginContainer" index="0"]
 texture = SubResource("Texture2DRD_bkk2m")
 
-[node name="EvolH" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+[node name="EvolH" parent="FFTOceanManager/SimulationStepUI/HBoxContainer" instance=ExtResource("15_6tosg")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/EvolH/MarginContainer" index="0"]
+[node name="TextureRect" parent="FFTOceanManager/SimulationStepUI/HBoxContainer/EvolH/MarginContainer" index="0"]
 texture = SubResource("Texture2DRD_ttefo")
 
-[node name="EvolChop" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+[node name="EvolChop" parent="FFTOceanManager/SimulationStepUI/HBoxContainer" instance=ExtResource("15_6tosg")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/EvolChop/MarginContainer" index="0"]
+[node name="TextureRect" parent="FFTOceanManager/SimulationStepUI/HBoxContainer/EvolChop/MarginContainer" index="0"]
 texture = SubResource("Texture2DRD_tuss4")
 
-[node name="Disp" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+[node name="Disp" parent="FFTOceanManager/SimulationStepUI/HBoxContainer" instance=ExtResource("15_6tosg")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/Disp/MarginContainer" index="0"]
+[node name="TextureRect" parent="FFTOceanManager/SimulationStepUI/HBoxContainer/Disp/MarginContainer" index="0"]
 texture = SubResource("Texture2DRD_xbnnm")
 
-[node name="Grad" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+[node name="Grad" parent="FFTOceanManager/SimulationStepUI/HBoxContainer" instance=ExtResource("15_6tosg")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/Grad/MarginContainer" index="0"]
+[node name="TextureRect" parent="FFTOceanManager/SimulationStepUI/HBoxContainer/Grad/MarginContainer" index="0"]
 texture = SubResource("Texture2DRD_rnmpa")
 
 [node name="FPSCounter" parent="." instance=ExtResource("6_8id5a")]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(11.1647, 0, 0, 0, 11.1647, 0, 0, 0, 11.1647, 0, 0, 0)
 mesh = SubResource("BoxMesh_xua8h")
 
-[editable path="SumOfSinCompute/Control/HBoxContainer/Initial"]
-[editable path="SumOfSinCompute/Control/HBoxContainer/Butterfly"]
-[editable path="SumOfSinCompute/Control/HBoxContainer/EvolH"]
-[editable path="SumOfSinCompute/Control/HBoxContainer/EvolChop"]
-[editable path="SumOfSinCompute/Control/HBoxContainer/Disp"]
-[editable path="SumOfSinCompute/Control/HBoxContainer/Grad"]
+[editable path="FFTOceanManager/SimulationStepUI/HBoxContainer/Initial"]
+[editable path="FFTOceanManager/SimulationStepUI/HBoxContainer/Butterfly"]
+[editable path="FFTOceanManager/SimulationStepUI/HBoxContainer/EvolH"]
+[editable path="FFTOceanManager/SimulationStepUI/HBoxContainer/EvolChop"]
+[editable path="FFTOceanManager/SimulationStepUI/HBoxContainer/Disp"]
+[editable path="FFTOceanManager/SimulationStepUI/HBoxContainer/Grad"]

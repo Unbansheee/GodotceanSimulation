@@ -58,8 +58,6 @@ func execute_compute():
 		rd.compute_list_dispatch(compute_list, x_groups, y_groups, 1)
 		rd.compute_list_end()
 
-		#rd.barrier(RenderingDevice.BARRIER_MASK_COMPUTE)
-
 		pingpongval += 1;
 		pingpongval %= 2;
 	
@@ -77,8 +75,6 @@ func execute_compute():
 		rd.compute_list_bind_uniform_set(compute_list, params_uniform, 1)
 		rd.compute_list_dispatch(compute_list, x_groups, y_groups, 1)
 		rd.compute_list_end()
-
-		#rd.barrier(RenderingDevice.BARRIER_MASK_COMPUTE)
 
 		pingpongval += 1;
 		pingpongval %= 2;

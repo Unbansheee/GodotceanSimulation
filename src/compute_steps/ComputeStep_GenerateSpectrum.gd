@@ -17,8 +17,6 @@ var uniform_buffer: RID
 @export var params: SpectrumComputeParameters
 
 
-
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass

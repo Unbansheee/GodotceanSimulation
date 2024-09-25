@@ -11,8 +11,7 @@ extends Node
 @export var InversionPermutation: ComputeStepInversionPermutation
 @export var CreateGradients: ComputeStepCreateGradients
 
-@export var ButterflyTexture: Node
-
+@export var ButterflyTexture: ComputeStepButterflyTexture
 
 @export var displacement_output: Texture2DRD
 @export var spectrum_initial_output: Texture2DRD
@@ -46,7 +45,7 @@ func _ready():
 	GenerateSpectrum.params.WindDirection = Wind
 	GenerateSpectrum.params.A = A
 	GenerateSpectrum.setup()
-	#GenerateSpectrum.execute_compute()
+	GenerateSpectrum.execute_compute()
 	
 	FourierComponents.h0kTex = GenerateSpectrum.h0kTex
 	FourierComponents.frequencies = GenerateSpectrum.waveDataTexture
@@ -54,12 +53,13 @@ func _ready():
 	FourierComponents.params.N = N
 	FourierComponents.setup()
 	
-	#ButterflyTexture.setup()
-	#ButterflyTexture.execute_compute()
-	var ButterFlyTextureCS = ButterflyTexture as ButterflyGeneratorSharp
-	ButterFlyTextureCS.N = N
-	ButterFlyTextureCS.Setup()
-	ButterFlyTextureCS.Execute()
+	#var ButterFlyTextureCS = ButterflyTexture as ButterflyGeneratorSharp
+	#ButterFlyTextureCS.N = N
+	#ButterFlyTextureCS.Setup()
+	#ButterFlyTextureCS.Execute()
+	ButterflyTexture.N = N
+	ButterflyTexture.setup()
+	ButterflyTexture.execute_compute()
 
 	ButterflyComputeHoriz.N = N
 	pingpong_texture = ButterflyComputeHoriz.create_sim_texture(RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT, N, N)
@@ -67,7 +67,7 @@ func _ready():
 
 	ButterflyComputeHoriz.pingpong0 = FourierComponents.hktdyTex
 	ButterflyComputeHoriz.pingpong1 = pingpong_texture
-	ButterflyComputeHoriz.butterflyTexture = ButterFlyTextureCS.ButterflyTexture
+	ButterflyComputeHoriz.butterflyTexture = ButterflyTexture.butterflyTex
 	ButterflyComputeHoriz.setup()
 
 	InversionPermutation.N = N
@@ -81,25 +81,20 @@ func _ready():
 	CreateGradients.setup()
 
 	displacement_output.set_texture_rd_rid(InversionPermutation.displacementTexture)
-	butterfly_tex_output.set_texture_rd_rid(ButterFlyTextureCS.ButterflyTexture)
+	butterfly_tex_output.set_texture_rd_rid(ButterflyTexture.butterflyTex)
 	spectrum_initial_output.set_texture_rd_rid(GenerateSpectrum.h0kTex)
 	spectrum_evolution_output.set_texture_rd_rid(FourierComponents.hktdyTex)
 	spectrum_evolution_output_chop.set_texture_rd_rid(FourierComponents.hktDTex)
 	gradient_output.set_texture_rd_rid(CreateGradients.gradients)
 	
-	
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	
 	timer += delta
 	if timer >= 1.0/60.0:
 		timer = 0
 		compute()
 		t += (current_time_ms() - sys_time) * t_delta
 		sys_time = current_time_ms()
-
-
 
 func compute():
 	var time: float = timerCounter.update()
@@ -112,7 +107,7 @@ func compute():
 	var choppy: RID
 	
 	if (ButterflyComputeHoriz.is_ready):
-		ButterflyComputeHoriz.butterflyTexture = ButterflyTexture.ButterflyTexture
+		ButterflyComputeHoriz.butterflyTexture = ButterflyTexture.butterflyTex
 		ButterflyComputeHoriz.pingpongval = 0
 		ButterflyComputeHoriz.pingpong0 = FourierComponents.hktdyTex
 		ButterflyComputeHoriz.pingpong1 = pingpong_texture

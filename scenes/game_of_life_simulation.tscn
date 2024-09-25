@@ -1,9 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://bb8gfunktlw3y"]
 
-[ext_resource type="Script" path="res://src/game_of_life_simulation.gd" id="1_qjcy1"]
-[ext_resource type="Script" path="res://src/camera_2d.gd" id="2_mnl6s"]
+[ext_resource type="Script" path="res://src/GameOfLifeSimulation.gd" id="1_qjcy1"]
+[ext_resource type="Script" path="res://src/camera/camera_2d.gd" id="2_mnl6s"]
 [ext_resource type="PackedScene" uid="uid://ddivo6ilohsb7" path="res://scenes/fps_counter.tscn" id="3_18uh3"]
-[ext_resource type="Script" path="res://src/sim_fps_label.gd" id="4_5yibm"]
+[ext_resource type="Script" path="res://src/ui/sim_fps_label.gd" id="4_5yibm"]
 
 [sub_resource type="Texture2DRD" id="Texture2DRD_hvj52"]
 
