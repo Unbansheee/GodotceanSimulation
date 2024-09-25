@@ -1,0 +1,567 @@
+[gd_scene load_steps=42 format=3 uid="uid://bhq0fm6iorl6j"]
+
+[ext_resource type="Shader" path="res://assets/skyshader.gdshader" id="1_ofb3e"]
+[ext_resource type="Script" path="res://src/FFTOceanManager.gd" id="3_n8jvm"]
+[ext_resource type="Shader" path="res://assets/sos_ocean_shader_compute.gdshader" id="5_gfqh6"]
+[ext_resource type="Script" path="res://src/ComputeStep_GenerateSpectrum.gd" id="5_vcuq3"]
+[ext_resource type="PackedScene" uid="uid://ddivo6ilohsb7" path="res://scenes/fps_counter.tscn" id="6_8id5a"]
+[ext_resource type="Texture2D" uid="uid://bwtjo0qfnutyb" path="res://assets/simulation_data/initial_spectrumm_texture.tres" id="6_x4joo"]
+[ext_resource type="Script" path="res://src/spectrum_compute_parameters.gd" id="7_t2u25"]
+[ext_resource type="Script" path="res://src/ComputeStep_FourierComponents.gd" id="8_qiald"]
+[ext_resource type="Script" path="res://src/FourierComponentsParameters.gd" id="8_x671a"]
+[ext_resource type="Script" path="res://src/ComputeStep_ButterflyCompute.gd" id="11_0jn0k"]
+[ext_resource type="Script" path="res://src/ButterflyGeneratorSharp.cs" id="12_g16uc"]
+[ext_resource type="Script" path="res://src/ComputeStep_InversionPermutation.gd" id="12_osvdc"]
+[ext_resource type="RDShaderFile" uid="uid://h12g5urncwmc" path="res://src/shaders/butterfly_texture_compute.glsl" id="13_hou1d"]
+[ext_resource type="Script" path="res://src/ComputeStep_CreateGradients.gd" id="13_uw1g5"]
+[ext_resource type="PackedScene" uid="uid://fijoe3ahiiwc" path="res://scenes/panel_container.tscn" id="15_6tosg"]
+[ext_resource type="Script" path="res://src/FreeLookCameraBase.cs" id="17_v4dm2"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2dq5t"]
+shader = ExtResource("1_ofb3e")
+shader_parameter/day_top_color = Color(0.556863, 0.776471, 1, 1)
+shader_parameter/day_bottom_color = Color(0.454902, 0.592157, 0.721569, 1)
+shader_parameter/sunset_top_color = Color(0.7, 0.75, 1, 1)
+shader_parameter/sunset_bottom_color = Color(1, 0.5, 0.7, 1)
+shader_parameter/night_top_color = Color(0.02, 0, 0.04, 1)
+shader_parameter/night_bottom_color = Color(0.1, 0, 0.2, 1)
+shader_parameter/horizon_color = Color(0.823529, 0.94902, 0.968627, 1)
+shader_parameter/horizon_blur = 0.05
+shader_parameter/sun_color = Color(1, 1, 1, 1)
+shader_parameter/sun_sunset_color = Color(10, 0, 0, 1)
+shader_parameter/sun_size = 0.054
+shader_parameter/sun_blur = 1.141
+shader_parameter/moon_color = Color(1, 0.95, 0.7, 1)
+shader_parameter/moon_size = 0.06
+shader_parameter/moon_blur = 0.1
+shader_parameter/clouds_edge_color = Color(0.8, 0.8, 0.98, 1)
+shader_parameter/clouds_top_color = Color(1, 1, 1, 1)
+shader_parameter/clouds_middle_color = Color(0.92, 0.92, 0.98, 1)
+shader_parameter/clouds_bottom_color = Color(0.83, 0.83, 0.94, 1)
+shader_parameter/clouds_speed = 1.7
+shader_parameter/clouds_direction = 0.2
+shader_parameter/clouds_scale = 2.0
+shader_parameter/clouds_cutoff = 0.23
+shader_parameter/clouds_fuzziness = 0.5
+shader_parameter/clouds_weight = 0.0
+shader_parameter/clouds_blur = 0.25
+shader_parameter/stars_speed = 1.0
+shader_parameter/overwritten_time = 0.0
+
+[sub_resource type="Sky" id="Sky_0h13o"]
+sky_material = SubResource("ShaderMaterial_2dq5t")
+
+[sub_resource type="Environment" id="Environment_8vr7a"]
+background_mode = 2
+sky = SubResource("Sky_0h13o")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 2
+glow_enabled = true
+fog_sun_scatter = 0.5
+fog_density = 0.0009
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.0068
+volumetric_fog_albedo = Color(0.890196, 0.819608, 0.854902, 1)
+volumetric_fog_length = 240.8
+volumetric_fog_sky_affect = 0.863
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_xbnnm"]
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_y2tg1"]
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_bkk2m"]
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_ttefo"]
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_tuss4"]
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_rnmpa"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_pqsld"]
+seed = 5815
+frequency = 1.0
+fractal_type = 0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_1fips"]
+width = 256
+height = 256
+generate_mipmaps = false
+normalize = false
+noise = SubResource("FastNoiseLite_pqsld")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_wyqwm"]
+seed = 4840
+frequency = 1.0
+fractal_type = 0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wmsbu"]
+width = 256
+height = 256
+generate_mipmaps = false
+normalize = false
+noise = SubResource("FastNoiseLite_wyqwm")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_3k7nu"]
+seed = 1310
+frequency = 1.0
+fractal_type = 0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_78lfr"]
+width = 256
+height = 256
+generate_mipmaps = false
+normalize = false
+noise = SubResource("FastNoiseLite_3k7nu")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_30wir"]
+seed = 1800
+frequency = 1.0
+fractal_type = 0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ypiyj"]
+width = 256
+height = 256
+generate_mipmaps = false
+normalize = false
+noise = SubResource("FastNoiseLite_30wir")
+
+[sub_resource type="Resource" id="Resource_6hrmd"]
+script = ExtResource("7_t2u25")
+N = 256
+L = 2000
+A = 4.0
+WindDirection = Vector2(40, 0)
+WindSpeed = 0.0
+
+[sub_resource type="Resource" id="Resource_247d2"]
+script = ExtResource("8_x671a")
+N = 256
+L = 1000
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1e83h"]
+render_priority = 0
+shader = ExtResource("5_gfqh6")
+shader_parameter/sim_scale = 100.0
+shader_parameter/height_scale = 1.0
+shader_parameter/choppy_scale = 0.5
+shader_parameter/water_base_colour = Color(0.109804, 0.164706, 0.47451, 1)
+shader_parameter/water_peak_colour = Color(1, 1, 1, 1)
+shader_parameter/transparency = 1.0
+shader_parameter/metallic = 0.48
+shader_parameter/roughness = 0.22
+shader_parameter/specular = 0.74
+shader_parameter/sss_intensity = 0.0
+shader_parameter/sss_colour = Color(0.27451, 0.619608, 0.372549, 1)
+shader_parameter/foam_bias = 0.0
+shader_parameter/foam_intensity = 1.0
+shader_parameter/ssr_resolution = 2.0
+shader_parameter/ssr_max_travel = 30.0
+shader_parameter/ssr_max_diff = 4.0
+shader_parameter/ssr_mix_strength = 0.6
+shader_parameter/refraction_intensity = 0.4
+shader_parameter/max_visible_depth = 10.0
+shader_parameter/color_deep = Color(0, 0.1, 0.4, 1)
+shader_parameter/border_color = Color(1, 1, 1, 1)
+shader_parameter/border_scale = 0.0
+shader_parameter/border_near = 0.5
+shader_parameter/border_far = 300.0
+shader_parameter/border_influence = 0.5
+shader_parameter/simulation_data = SubResource("Texture2DRD_xbnnm")
+shader_parameter/gradient_data = SubResource("Texture2DRD_rnmpa")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_egyqu"]
+material = SubResource("ShaderMaterial_1e83h")
+size = Vector2(50, 50)
+subdivide_width = 500
+subdivide_depth = 500
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_6uxx4"]
+material = SubResource("ShaderMaterial_1e83h")
+size = Vector2(50, 50)
+subdivide_width = 250
+subdivide_depth = 250
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_rcc4i"]
+material = SubResource("ShaderMaterial_1e83h")
+size = Vector2(50, 50)
+subdivide_width = 100
+subdivide_depth = 100
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_k3d1y"]
+material = SubResource("ShaderMaterial_1e83h")
+size = Vector2(50, 50)
+subdivide_width = 50
+subdivide_depth = 50
+
+[sub_resource type="BoxMesh" id="BoxMesh_xua8h"]
+
+[node name="Main" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.997912, 0.0645841, 0, -0.0645841, 0.997912, 2.08994, 6.63057, 47.8874)
+current = true
+script = ExtResource("17_v4dm2")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_8vr7a")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.80953, -0.450405, 0.376558, -0.489569, 0.871912, -0.00957918, -0.324011, -0.192106, -0.926344, 3.3234, 83.2302, 850.257)
+light_color = Color(1, 0.788235, 0.788235, 1)
+light_volumetric_fog_energy = 1.222
+shadow_enabled = true
+
+[node name="SumOfSinCompute" type="Node" parent="." node_paths=PackedStringArray("GenerateSpectrum", "FourierComponents", "ButterflyComputeHoriz", "InversionPermutation", "CreateGradients", "ButterflyTexture")]
+script = ExtResource("3_n8jvm")
+N = 512
+L = 2200
+A = 16
+Wind = Vector2(60, 20)
+GenerateSpectrum = NodePath("ComputeStep_GenerateSpectrum")
+FourierComponents = NodePath("ComputeStep_FourierComponents")
+ButterflyComputeHoriz = NodePath("ComputeFFT")
+InversionPermutation = NodePath("ComputeStepInversionPermutation")
+CreateGradients = NodePath("ComputeStepCreateGradients")
+ButterflyTexture = NodePath("ButterflyGeneratorSharp")
+displacement_output = SubResource("Texture2DRD_xbnnm")
+spectrum_initial_output = SubResource("Texture2DRD_y2tg1")
+butterfly_tex_output = SubResource("Texture2DRD_bkk2m")
+spectrum_evolution_output = SubResource("Texture2DRD_ttefo")
+spectrum_evolution_output_chop = SubResource("Texture2DRD_tuss4")
+gradient_output = SubResource("Texture2DRD_rnmpa")
+
+[node name="ComputeStep_GenerateSpectrum" type="Node" parent="SumOfSinCompute"]
+script = ExtResource("5_vcuq3")
+spec_tex = ExtResource("6_x4joo")
+noise_maps = Array[Texture2D]([SubResource("NoiseTexture2D_1fips"), SubResource("NoiseTexture2D_wmsbu"), SubResource("NoiseTexture2D_78lfr"), SubResource("NoiseTexture2D_ypiyj")])
+params = SubResource("Resource_6hrmd")
+shader_input = "res://src/shaders/generate_spectrum_compute.glsl"
+group_size = Vector2i(16, 16)
+
+[node name="ButterflyGeneratorSharp" type="Node" parent="SumOfSinCompute"]
+script = ExtResource("12_g16uc")
+ShaderFile = ExtResource("13_hou1d")
+N = 256
+
+[node name="ComputeStep_FourierComponents" type="Node" parent="SumOfSinCompute"]
+script = ExtResource("8_qiald")
+params = SubResource("Resource_247d2")
+shader_input = "res://src/shaders/fourier_components_compute.glsl"
+group_size = Vector2i(16, 16)
+
+[node name="ComputeFFT" type="Node" parent="SumOfSinCompute"]
+script = ExtResource("11_0jn0k")
+shader_input = "res://src/shaders/butterfly_compute.glsl"
+group_size = Vector2i(16, 16)
+
+[node name="ComputeStepInversionPermutation" type="Node" parent="SumOfSinCompute"]
+script = ExtResource("12_osvdc")
+N = 256
+shader_input = "res://src/shaders/inversion_permutation_compute.glsl"
+group_size = Vector2i(16, 16)
+
+[node name="ComputeStepCreateGradients" type="Node" parent="SumOfSinCompute"]
+script = ExtResource("13_uw1g5")
+shader_input = "res://src/shaders/create_gradients.glsl"
+
+[node name="Compute_SumOfSines_Plane" type="MeshInstance3D" parent="SumOfSinCompute"]
+mesh = SubResource("PlaneMesh_egyqu")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane2" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+mesh = SubResource("PlaneMesh_6uxx4")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane3" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -100)
+mesh = SubResource("PlaneMesh_rcc4i")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane19" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane20" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane22" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane23" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane21" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane24" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane25" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane26" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane27" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane28" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane29" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -150, 0, -100)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane30" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -150, 0, -50)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane31" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -150, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane32" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -150, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane38" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 150, 0, -100)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane39" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 150, 0, -50)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane40" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 150, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane41" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 150, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane33" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -200, 0, -100)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane34" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -200, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane35" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -200, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane42" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 200, 0, -100)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane43" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 200, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane44" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 200, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane36" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -250, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane37" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -250, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane45" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 250, 0, -200)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane46" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 250, 0, -150)
+mesh = SubResource("PlaneMesh_k3d1y")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane4" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 0)
+mesh = SubResource("PlaneMesh_egyqu")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane5" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -50)
+mesh = SubResource("PlaneMesh_6uxx4")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane6" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -100)
+mesh = SubResource("PlaneMesh_rcc4i")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane7" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 0)
+mesh = SubResource("PlaneMesh_egyqu")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane10" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 50)
+mesh = SubResource("PlaneMesh_egyqu")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane11" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 50)
+mesh = SubResource("PlaneMesh_egyqu")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane12" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 50)
+mesh = SubResource("PlaneMesh_egyqu")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane8" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -50)
+mesh = SubResource("PlaneMesh_6uxx4")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane9" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -100)
+mesh = SubResource("PlaneMesh_rcc4i")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane13" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -50)
+mesh = SubResource("PlaneMesh_6uxx4")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane15" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, 0)
+mesh = SubResource("PlaneMesh_6uxx4")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane14" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -100)
+mesh = SubResource("PlaneMesh_rcc4i")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane16" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -50)
+mesh = SubResource("PlaneMesh_6uxx4")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane17" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, 0)
+mesh = SubResource("PlaneMesh_6uxx4")
+skeleton = NodePath("../..")
+
+[node name="Compute_SumOfSines_Plane18" type="MeshInstance3D" parent="SumOfSinCompute"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -100)
+mesh = SubResource("PlaneMesh_rcc4i")
+skeleton = NodePath("../..")
+
+[node name="Control" type="Control" parent="SumOfSinCompute"]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SumOfSinCompute/Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -677.0
+offset_bottom = 108.0
+grow_horizontal = 0
+
+[node name="Initial" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/Initial/MarginContainer" index="0"]
+texture = SubResource("Texture2DRD_y2tg1")
+
+[node name="Butterfly" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/Butterfly/MarginContainer" index="0"]
+texture = SubResource("Texture2DRD_bkk2m")
+
+[node name="EvolH" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/EvolH/MarginContainer" index="0"]
+texture = SubResource("Texture2DRD_ttefo")
+
+[node name="EvolChop" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/EvolChop/MarginContainer" index="0"]
+texture = SubResource("Texture2DRD_tuss4")
+
+[node name="Disp" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/Disp/MarginContainer" index="0"]
+texture = SubResource("Texture2DRD_xbnnm")
+
+[node name="Grad" parent="SumOfSinCompute/Control/HBoxContainer" instance=ExtResource("15_6tosg")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" parent="SumOfSinCompute/Control/HBoxContainer/Grad/MarginContainer" index="0"]
+texture = SubResource("Texture2DRD_rnmpa")
+
+[node name="FPSCounter" parent="." instance=ExtResource("6_8id5a")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_xua8h")
+
+[editable path="SumOfSinCompute/Control/HBoxContainer/Initial"]
+[editable path="SumOfSinCompute/Control/HBoxContainer/Butterfly"]
+[editable path="SumOfSinCompute/Control/HBoxContainer/EvolH"]
+[editable path="SumOfSinCompute/Control/HBoxContainer/EvolChop"]
+[editable path="SumOfSinCompute/Control/HBoxContainer/Disp"]
+[editable path="SumOfSinCompute/Control/HBoxContainer/Grad"]

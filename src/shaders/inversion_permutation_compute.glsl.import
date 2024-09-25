@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://qyqh6vc0elac"
+path="res://.godot/imported/inversion_permutation_compute.glsl-9a37e2d1ae8e9ae2f1fe69a95290b500.res"
+
+[deps]
+
+source_file="res://src/shaders/inversion_permutation_compute.glsl"
+dest_files=["res://.godot/imported/inversion_permutation_compute.glsl-9a37e2d1ae8e9ae2f1fe69a95290b500.res"]
+
+[params]
+

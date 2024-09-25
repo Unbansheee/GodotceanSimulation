@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://h12g5urncwmc"
+path="res://.godot/imported/butterfly_texture_compute.glsl-ec733f4e13063700b3eed88aca66a793.res"
+
+[deps]
+
+source_file="res://src/shaders/butterfly_texture_compute.glsl"
+dest_files=["res://.godot/imported/butterfly_texture_compute.glsl-ec733f4e13063700b3eed88aca66a793.res"]
+
+[params]
+

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bw27wof5c0ha"
+path="res://.godot/imported/fourier_components_compute.glsl-43104a24e07b8ce9aa5ffe8db64201af.res"
+
+[deps]
+
+source_file="res://src/shaders/fourier_components_compute.glsl"
+dest_files=["res://.godot/imported/fourier_components_compute.glsl-43104a24e07b8ce9aa5ffe8db64201af.res"]
+
+[params]
+

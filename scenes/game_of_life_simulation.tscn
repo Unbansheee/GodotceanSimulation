@@ -1,0 +1,98 @@
+[gd_scene load_steps=6 format=3 uid="uid://bb8gfunktlw3y"]
+
+[ext_resource type="Script" path="res://src/game_of_life_simulation.gd" id="1_qjcy1"]
+[ext_resource type="Script" path="res://src/camera_2d.gd" id="2_mnl6s"]
+[ext_resource type="PackedScene" uid="uid://ddivo6ilohsb7" path="res://scenes/fps_counter.tscn" id="3_18uh3"]
+[ext_resource type="Script" path="res://src/sim_fps_label.gd" id="4_5yibm"]
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_hvj52"]
+
+[node name="GameOfLifeSimulation" type="Node" node_paths=PackedStringArray("display_rect")]
+script = ExtResource("1_qjcy1")
+shader_input = "res://src/shaders/compute_test.glsl"
+heightmap_height = 256
+display_rect = NodePath("Control/TextureRect")
+group_size = Vector2i(32, 32)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.4, 0.4)
+script = ExtResource("2_mnl6s")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TextureRect" type="TextureRect" parent="Control"]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("Texture2DRD_hvj52")
+
+[node name="FPSCounter" parent="." instance=ExtResource("3_18uh3")]
+
+[node name="Instructions" type="Label" parent="FPSCounter"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 11.0
+offset_top = -86.0
+offset_right = 121.0
+offset_bottom = -11.0
+grow_vertical = 0
+size_flags_horizontal = 2
+size_flags_vertical = 8
+text = "Scroll to zoom
+LMB to draw
+RMB to pan"
+
+[node name="SimulationFPS" type="HSlider" parent="FPSCounter"]
+offset_left = 6.0
+offset_top = 44.0
+offset_right = 208.0
+offset_bottom = 84.0
+size_flags_horizontal = 3
+size_flags_vertical = 1
+value = 60.0
+
+[node name="Label" type="Label" parent="FPSCounter"]
+offset_left = 212.0
+offset_top = 52.0
+offset_right = 299.0
+offset_bottom = 75.0
+text = "Sim FPS: 60"
+script = ExtResource("4_5yibm")
+base_text = "Sim FPS: "
+
+[node name="DrawRadius" type="HSlider" parent="FPSCounter"]
+offset_left = 6.0
+offset_top = 79.0
+offset_right = 206.0
+offset_bottom = 119.0
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 1.0
+value = 32.0
+
+[node name="DrawRadiusLabel" type="Label" parent="FPSCounter"]
+offset_left = 212.0
+offset_top = 87.0
+offset_right = 336.0
+offset_bottom = 110.0
+text = "Draw Radius: 32"
+script = ExtResource("4_5yibm")
+base_text = "Draw Radius: "
+
+[connection signal="value_changed" from="FPSCounter/SimulationFPS" to="." method="_on_simulation_fps_value_changed"]
+[connection signal="value_changed" from="FPSCounter/SimulationFPS" to="FPSCounter/Label" method="_on_simulation_fps_value_changed"]
+[connection signal="value_changed" from="FPSCounter/DrawRadius" to="." method="_on_draw_radius_value_changed"]
+[connection signal="value_changed" from="FPSCounter/DrawRadius" to="FPSCounter/DrawRadiusLabel" method="_on_simulation_fps_value_changed"]

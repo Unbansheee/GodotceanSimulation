@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3 uid="uid://fijoe3ahiiwc"]
+
+[ext_resource type="Texture2D" uid="uid://du0x6jve26v6k" path="res://assets/simulation_data/fourier_component_x.tres" id="1_2etws"]
+
+[node name="PanelContainer" type="PanelContainer"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -179.0
+offset_right = 179.0
+grow_vertical = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer"]
+texture_filter = 1
+layout_mode = 2
+texture = ExtResource("1_2etws")
+expand_mode = 1

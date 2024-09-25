@@ -1,0 +1,44 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://d2ss04md4v70g"]
+
+[ext_resource type="Shader" path="res://assets/ocean_shader.gdshader" id="1_ypl12"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_ypl12")
+shader_parameter/height_scale = 1.0
+shader_parameter/sun_direction = null
+shader_parameter/wave_count = null
+shader_parameter/water_base_colour = null
+shader_parameter/water_peak_colour = null
+shader_parameter/transparency = 0.4
+shader_parameter/metallic = 0.0
+shader_parameter/roughness = 0.5
+shader_parameter/specular = 1.0
+shader_parameter/sss_intensity = null
+shader_parameter/sss_colour = null
+shader_parameter/foam_bias = null
+shader_parameter/foam_intensity = null
+shader_parameter/vertex_frequency = null
+shader_parameter/vertex_amplitude = null
+shader_parameter/vertex_max_peak = null
+shader_parameter/vertex_peak_offset = null
+shader_parameter/vertex_drag = null
+shader_parameter/vertex_seed = null
+shader_parameter/vertex_frequency_mult = null
+shader_parameter/vertex_amplitude_mult = null
+shader_parameter/vertex_speed_ramp = null
+shader_parameter/initial_speed = null
+shader_parameter/vertex_seed_iter = null
+shader_parameter/vertex_height = null
+shader_parameter/ssr_resolution = 2.0
+shader_parameter/ssr_max_travel = 30.0
+shader_parameter/ssr_max_diff = 4.0
+shader_parameter/ssr_mix_strength = 0.7
+shader_parameter/refraction_intensity = 0.4
+shader_parameter/max_visible_depth = 10.0
+shader_parameter/color_deep = Color(0, 0.1, 0.4, 1)
+shader_parameter/border_color = Color(1, 1, 1, 1)
+shader_parameter/border_scale = 2.0
+shader_parameter/border_near = 0.5
+shader_parameter/border_far = 300.0
+shader_parameter/border_influence = 0.5

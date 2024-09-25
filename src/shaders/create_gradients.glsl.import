@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bfda5xqa107rf"
+path="res://.godot/imported/create_gradients.glsl-a18e0f5e4a3c238bddf85b32d5fd4407.res"
+
+[deps]
+
+source_file="res://src/shaders/create_gradients.glsl"
+dest_files=["res://.godot/imported/create_gradients.glsl-a18e0f5e4a3c238bddf85b32d5fd4407.res"]
+
+[params]
+
