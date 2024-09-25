@@ -7,9 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://ddivo6ilohsb7" path="res://scenes/fps_counter.tscn" id="6_8id5a"]
 [ext_resource type="Texture2D" uid="uid://bwtjo0qfnutyb" path="res://assets/simulation_data/initial_spectrumm_texture.tres" id="6_x4joo"]
 [ext_resource type="Script" path="res://src/compute_steps/ComputeStep_ButterflyTexture.gd" id="7_ovy1l"]
-[ext_resource type="Script" path="res://src/shaders/spectrum_compute_parameters.gd" id="7_t2u25"]
+[ext_resource type="Script" path="res://src/compute_steps/parameters/SpectrumComputeParameters.gd" id="7_t2u25"]
 [ext_resource type="Script" path="res://src/compute_steps/ComputeStep_FourierComponents.gd" id="8_qiald"]
-[ext_resource type="Script" path="res://src/shaders/FourierComponentsParameters.gd" id="8_x671a"]
+[ext_resource type="Script" path="res://src/compute_steps/parameters/FourierComponentsParameters.gd" id="8_x671a"]
 [ext_resource type="Script" path="res://src/compute_steps/ComputeStep_ButterflyCompute.gd" id="11_0jn0k"]
 [ext_resource type="Script" path="res://src/compute_steps/ComputeStep_InversionPermutation.gd" id="12_osvdc"]
 [ext_resource type="Script" path="res://src/compute_steps/ComputeStep_CreateGradients.gd" id="13_uw1g5"]
@@ -211,7 +211,7 @@ light_color = Color(1, 0.788235, 0.788235, 1)
 light_volumetric_fog_energy = 1.222
 shadow_enabled = true
 
-[node name="FFTOceanManager" type="Node" parent="." node_paths=PackedStringArray("GenerateSpectrum", "FourierComponents", "ButterflyComputeHoriz", "InversionPermutation", "CreateGradients", "ButterflyTexture")]
+[node name="FFTOceanManager" type="Node" parent="." node_paths=PackedStringArray("GenerateSpectrum", "FourierComponents", "ButterflyFFTCompute", "InversionPermutation", "CreateGradients", "ButterflyTexture")]
 script = ExtResource("3_n8jvm")
 N = 512
 L = 2200
@@ -219,10 +219,10 @@ A = 16
 Wind = Vector2(60, 20)
 GenerateSpectrum = NodePath("ComputeStep_GenerateSpectrum")
 FourierComponents = NodePath("ComputeStep_FourierComponents")
-ButterflyComputeHoriz = NodePath("ComputeFFT")
-InversionPermutation = NodePath("ComputeStepInversionPermutation")
-CreateGradients = NodePath("ComputeStepCreateGradients")
-ButterflyTexture = NodePath("ComputeStepButterflyTexture")
+ButterflyFFTCompute = NodePath("ComputeStep_ButterflyFFT")
+InversionPermutation = NodePath("ComputeStep_InversionPermutation")
+CreateGradients = NodePath("ComputeStep_CreateGradients")
+ButterflyTexture = NodePath("ComputeStep_GenerateButterflyTexture")
 displacement_output = SubResource("Texture2DRD_xbnnm")
 spectrum_initial_output = SubResource("Texture2DRD_y2tg1")
 butterfly_tex_output = SubResource("Texture2DRD_bkk2m")
@@ -238,7 +238,7 @@ params = SubResource("Resource_6hrmd")
 shader_input = "res://src/shaders/generate_spectrum_compute.glsl"
 group_size = Vector2i(16, 16)
 
-[node name="ComputeStepButterflyTexture" type="Node" parent="FFTOceanManager"]
+[node name="ComputeStep_GenerateButterflyTexture" type="Node" parent="FFTOceanManager"]
 script = ExtResource("7_ovy1l")
 N = 16
 shader_input = "res://src/shaders/butterfly_texture_compute.glsl"
@@ -249,18 +249,18 @@ params = SubResource("Resource_247d2")
 shader_input = "res://src/shaders/fourier_components_compute.glsl"
 group_size = Vector2i(16, 16)
 
-[node name="ComputeFFT" type="Node" parent="FFTOceanManager"]
+[node name="ComputeStep_ButterflyFFT" type="Node" parent="FFTOceanManager"]
 script = ExtResource("11_0jn0k")
 shader_input = "res://src/shaders/butterfly_compute.glsl"
 group_size = Vector2i(16, 16)
 
-[node name="ComputeStepInversionPermutation" type="Node" parent="FFTOceanManager"]
+[node name="ComputeStep_InversionPermutation" type="Node" parent="FFTOceanManager"]
 script = ExtResource("12_osvdc")
 N = 256
 shader_input = "res://src/shaders/inversion_permutation_compute.glsl"
 group_size = Vector2i(16, 16)
 
-[node name="ComputeStepCreateGradients" type="Node" parent="FFTOceanManager"]
+[node name="ComputeStep_CreateGradients" type="Node" parent="FFTOceanManager"]
 script = ExtResource("13_uw1g5")
 shader_input = "res://src/shaders/create_gradients.glsl"
 

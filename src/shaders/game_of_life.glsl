@@ -1,6 +1,8 @@
 #[compute]
 #version 460
 
+// Game of life simulation used as a learning exercise
+
 // Invocations in the (x, y, z) dimension
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 

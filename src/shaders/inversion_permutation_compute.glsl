@@ -16,19 +16,6 @@ layout(set = 1, binding = 0) uniform UniformBuffer{
 
 void main()
 {
-    /*
-    ivec2 x = ivec2(gl_GlobalInvocationID.xy);
-    float perms[] = {1.0, -1.0};
-    int index = int(mod(float(x.x + x.y), 2));
-    float perm = 1.0;
-    int N = u.N;
-    
-    if (u.pingpong == 0){
-        float h = imageLoad(height, x).r;
-        imageStore(displacement, x, vec4(perm*(h/float(N*N)), perm*(h/float(N*N)), perm*(h/float(N*N)), 1));
-    }
-    */
-
         const float lambda = 1.3f;
         ivec2 loc = ivec2(gl_GlobalInvocationID.xy);
 
@@ -37,5 +24,4 @@ void main()
         vec2 D = sign_correction * imageLoad(choppy, loc).xy /float(u.N*u.N);
         
         imageStore(displacement, loc, vec4(D.x * lambda, h, D.y * lambda, 1.0));
-
 }

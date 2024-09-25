@@ -7,7 +7,7 @@ extends Node
 
 @export var GenerateSpectrum: ComputeStepGenerateSpectrum
 @export var FourierComponents: ComputeStepFourierComponents
-@export var ButterflyComputeHoriz: ComputeStepButterflyCompute
+@export var ButterflyFFTCompute: ComputeStepButterflyCompute
 @export var InversionPermutation: ComputeStepInversionPermutation
 @export var CreateGradients: ComputeStepCreateGradients
 
@@ -53,22 +53,18 @@ func _ready():
 	FourierComponents.params.N = N
 	FourierComponents.setup()
 	
-	#var ButterFlyTextureCS = ButterflyTexture as ButterflyGeneratorSharp
-	#ButterFlyTextureCS.N = N
-	#ButterFlyTextureCS.Setup()
-	#ButterFlyTextureCS.Execute()
 	ButterflyTexture.N = N
 	ButterflyTexture.setup()
 	ButterflyTexture.execute_compute()
 
-	ButterflyComputeHoriz.N = N
-	pingpong_texture = ButterflyComputeHoriz.create_sim_texture(RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT, N, N)
-	pingpong_texture_b = ButterflyComputeHoriz.create_sim_texture(RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT, N, N)
+	ButterflyFFTCompute.N = N
+	pingpong_texture = ButterflyFFTCompute.create_sim_texture(RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT, N, N)
+	pingpong_texture_b = ButterflyFFTCompute.create_sim_texture(RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT, N, N)
 
-	ButterflyComputeHoriz.pingpong0 = FourierComponents.hktdyTex
-	ButterflyComputeHoriz.pingpong1 = pingpong_texture
-	ButterflyComputeHoriz.butterflyTexture = ButterflyTexture.butterflyTex
-	ButterflyComputeHoriz.setup()
+	ButterflyFFTCompute.pingpong0 = FourierComponents.hktdyTex
+	ButterflyFFTCompute.pingpong1 = pingpong_texture
+	ButterflyFFTCompute.butterflyTexture = ButterflyTexture.butterflyTex
+	ButterflyFFTCompute.setup()
 
 	InversionPermutation.N = N
 	InversionPermutation.height = FourierComponents.hktdyTex
@@ -106,24 +102,24 @@ func compute():
 	var height: RID
 	var choppy: RID
 	
-	if (ButterflyComputeHoriz.is_ready):
-		ButterflyComputeHoriz.butterflyTexture = ButterflyTexture.butterflyTex
-		ButterflyComputeHoriz.pingpongval = 0
-		ButterflyComputeHoriz.pingpong0 = FourierComponents.hktdyTex
-		ButterflyComputeHoriz.pingpong1 = pingpong_texture
-		ButterflyComputeHoriz.execute_compute()
-		height = ButterflyComputeHoriz.get_output_texture()
+	if (ButterflyFFTCompute.is_ready):
+		ButterflyFFTCompute.butterflyTexture = ButterflyTexture.butterflyTex
+		ButterflyFFTCompute.pingpongval = 0
+		ButterflyFFTCompute.pingpong0 = FourierComponents.hktdyTex
+		ButterflyFFTCompute.pingpong1 = pingpong_texture
+		ButterflyFFTCompute.execute_compute()
+		height = ButterflyFFTCompute.get_output_texture()
 		
-	if (ButterflyComputeHoriz.is_ready):
-		ButterflyComputeHoriz.pingpongval = 0
-		ButterflyComputeHoriz.pingpong0 = FourierComponents.hktDTex
-		ButterflyComputeHoriz.pingpong1 = pingpong_texture_b
-		ButterflyComputeHoriz.execute_compute()
-		choppy = ButterflyComputeHoriz.get_output_texture()
+	if (ButterflyFFTCompute.is_ready):
+		ButterflyFFTCompute.pingpongval = 0
+		ButterflyFFTCompute.pingpong0 = FourierComponents.hktDTex
+		ButterflyFFTCompute.pingpong1 = pingpong_texture_b
+		ButterflyFFTCompute.execute_compute()
+		choppy = ButterflyFFTCompute.get_output_texture()
 
 
 	if (InversionPermutation.is_ready):
-		InversionPermutation.pingPong = ButterflyComputeHoriz.pingpongval
+		InversionPermutation.pingPong = ButterflyFFTCompute.pingpongval
 		InversionPermutation.height = height
 		InversionPermutation.choppy = choppy
 		InversionPermutation.execute_compute()

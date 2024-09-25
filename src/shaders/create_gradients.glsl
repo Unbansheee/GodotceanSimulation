@@ -32,14 +32,14 @@ void main() {
         float INV_TILE_SIZE = pc.N / pc.L;
         float TILE_SIZE_X2 = (pc.L * 2.0) / pc.N;
         
-        // Jacobian
+        // Jacobian?
         vec2 dDx = (disp_right.xz - disp_left.xz) * INV_TILE_SIZE;
         vec2 dDy = (disp_top.xz - disp_bottom.xz) * INV_TILE_SIZE;
         
         float J = (1.0 + dDx.x) * (1.0 + dDy.y) - dDx.y * dDy.x;
         
         
-        // NOTE: normals are in tangent space for now
+        // NOTE: normals are in tangent space for now and are kinda broken
         imageStore(gradients, loc, vec4(gradient, 8, J));
 
 }
